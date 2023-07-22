@@ -1,41 +1,40 @@
+import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { PrismaService } from '../../prisma/prisma.service';
-import { CreateUserDto } from '../dto/create-user.dto';
-import { UserService } from '../user.service';
+import { UserModule } from '../user.module';
 
-describe('UserService', () => {
-  let userService: UserService;
+import * as request from 'supertest';
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [UserService, PrismaService],
+describe('UserController', () => {
+  let app: INestApplication;
+
+  beforeAll(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [UserModule],
     }).compile();
 
-    userService = module.get<UserService>(UserService);
+    app = moduleFixture.createNestApplication();
+    await app.init();
   });
 
   afterEach(async () => {
-    // Clean up the database after each test
-    await userService.prisma.user.deleteMany();
+    await app.close();
   });
 
-  it('should create a user', async () => {
-    const createUserDto: CreateUserDto = {
-      email: 'test@example.com',
-      name: 'Test User',
-      password: 'password',
-    };
+  describe('find user or users', () => {
+    it('find user by email', () => {
+      return request(app.getHttpServer())
+        .get('/api/user/test@example.com')
+        .expect(200)
+        .expect((res) => {
+          expect(res.body.email).toEqual('test@example.com');
+          expect(res.body.password).toBeUndefined();
+        });
+    });
 
-    const user = await userService.createUser(createUserDto);
+    it('find all users', async () => {
+      await request(app.getHttpServer()).get('/api/user').expect(200);
 
-    expect(user).toBeDefined();
-    expect(user.email).toEqual(createUserDto.email);
-    expect(user.name).toEqual(createUserDto.name);
-    // Don't compare passwords directly, as the stored password should be hashed
-
-    const dbUser = await userService.getUserByEmail(createUserDto.email);
-    expect(dbUser).toBeDefined();
-    expect(dbUser.email).toEqual(createUserDto.email);
-    expect(dbUser.name).toEqual(createUserDto.name);
+      // console.log('response.body: ', response.body);
+    });
   });
 });
