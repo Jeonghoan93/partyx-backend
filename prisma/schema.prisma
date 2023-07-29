@@ -44,32 +44,33 @@ model Account {
 }
 
 model Listing {
-  id                  String    @id @default(auto()) @map("_id") @db.ObjectId
+  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
   listing_url         String
   name                String
   description         String
   summary             String
   space               String?
   imageSrc            String
-  createdAt           DateTime  @default(now())
+  createdAt           DateTime @default(now())
   category            String
   minimumGuests       Int
-  MaxmumGuests        Int
+  MaximumGuests       Int
   locationValue       String
   price               Int
-  userId              String    @db.ObjectId
+  userId              String   @db.ObjectId
   image               String
   address             String
   interaction         String
   cancellation_policy String
-  event_rules         String?
-  event_type          String?
-  music_type          String?
-  latitude            Float?
-  longitude           Float?
-  rating              Float?
-  first_review        DateTime?
-  last_review         DateTime?
+
+  event_rules  String?
+  event_type   String?
+  music_type   String?
+  latitude     Float?
+  longitude    Float?
+  rating       Float?
+  first_review DateTime?
+  last_review  DateTime?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
